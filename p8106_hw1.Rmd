@@ -2,7 +2,7 @@
 title: "P8106 Homework 1"
 author: "Pengyuan Su (ps3195)"
 date: "2/9/2021"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -53,7 +53,8 @@ ctr <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
 # Question 1
 
-```{r}
+```{r lm}
+set.seed(5)
 fit.lm = 
   train(
     solubility ~.,
@@ -65,3 +66,100 @@ fit.lm =
 RMSE(predict(fit.lm, newdata = sol_test), sol_test$solubility)
 ```
 
+# Question 2
+
+```{r ridge}
+set.seed(5)
+
+fit.ridge = 
+  train(
+    solubility ~.,
+    data = sol_train,
+    method = "glmnet",
+    tuneGrid = 
+      expand.grid(
+        alpha = 0, 
+        lambda = exp(seq(from = -1, to = -5, length = 1000))
+        ),
+    trControl = ctr,
+    preProcess = c("center", "scale")
+  )
+
+plot(fit.ridge, xTrans = log)
+
+fit.ridge$bestTune
+
+RMSE(predict(fit.ridge, s = "lamda.min", news = sol_test), sol_test$solubility)
+```
+
+# Question 3
+
+```{r lasso}
+set.seed(5)
+fit.lasso = 
+  train(
+    solubility ~.,
+    data = sol_train,
+    method = "glmnet",
+    tuneGrid = 
+      expand.grid(
+        alpha = 1,
+        lambda = exp(seq(from = -1, to = -8, length = 1000))
+      ),
+    trControl = ctr,
+    preProcess = c("center", "scale")
+  )
+
+plot(fit.lasso, xTrans = log)
+
+fit.lasso$bestTune
+
+RMSE(predict(fit.lasso, s = "lambda.min", newx = sol_test), sol_test$solubility)
+
+
+sum(coef(fit.lasso$finalModel, s = fit.lasso$bestTune$lambda)!=0)
+```
+
+
+# Question 4
+
+```{r pcr}
+set.seed(5)
+fit.pcr =
+  train(
+    solubility~.,
+    data = sol_train,
+    method = "pcr",
+    tuneGrid = 
+      expand.grid(ncomp = seq(1,ncol(sol_train))),
+    preProcess = c("center","scale"),
+    trControl = ctr
+  )
+
+fit.pcr$bestTune
+
+ggplot(fit.pcr, highlight = TRUE) + theme_bw()
+
+validationplot(fit.pcr$finalModel, val.type="MSEP", legendpos = "topright")
+
+RMSE(predict(fit.pcr, x_test), y_test)
+mean((predict(fit.pcr, x_test) - y_test)^2)
+```
+
+# Question 5
+
+```{r}
+resample = 
+  resamples(list(
+    lm = fit.lm,
+    ridge = fit.ridge,
+    lasso = fit.lasso,
+    pcr = fit.pcr
+  ))
+
+summary(resample)
+
+bwplot(resample, metric = "RMSE")
+```
+
+From numeric result and boxplot, Lasso model has the smallest RMSE, and we will choose it for predicting solubility.
