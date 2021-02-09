@@ -1,0 +1,67 @@
+---
+title: "P8106 Homework 1"
+author: "Pengyuan Su (ps3195)"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(caret)
+library(pls)
+
+knitr::opts_chunk$set(
+  fig.height = 6,
+  message = F,
+  echo = T,
+  warning = F,
+  cache = T
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis",
+  digits = 3
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+```{r}
+# Import data
+
+sol_train = 
+  read_csv("./data/solubility_train.csv") %>% 
+  janitor::clean_names()
+
+sol_test = 
+  read_csv("./data/solubility_test.csv") %>% 
+  janitor::clean_names()
+
+x_train = model.matrix(solubility ~., sol_train)[, -1]
+y_train = sol_train$solubility
+
+x_test = model.matrix(solubility ~., sol_test)[,-1]
+y_test = sol_test$solubility
+
+ctr <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+```
+
+
+# Question 1
+
+```{r}
+fit.lm = 
+  train(
+    solubility ~.,
+    data = sol_train,
+    method = "lm",
+    trControl = ctr
+  )
+
+RMSE(predict(fit.lm, newdata = sol_test), sol_test$solubility)
+```
+
