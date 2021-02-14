@@ -89,7 +89,7 @@ plot(fit.ridge, xTrans = log)
 
 fit.ridge$bestTune
 
-RMSE(predict(fit.ridge, s = "lamda.min", news = sol_test), sol_test$solubility)^2
+RMSE(predict(fit.ridge, s = "lamda.min", newdata = sol_test), sol_test$solubility)^2
 ```
 
 # Question 3
@@ -114,7 +114,7 @@ plot(fit.lasso, xTrans = log)
 
 fit.lasso$bestTune
 
-RMSE(predict(fit.lasso, s = "lambda.min", newx = sol_test), sol_test$solubility)^2
+RMSE(predict(fit.lasso, s = "lambda.min", newdata = sol_test), sol_test$solubility)^2
 
 
 sum(coef(fit.lasso$finalModel, s = fit.lasso$bestTune$lambda)!=0)
