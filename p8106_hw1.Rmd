@@ -63,7 +63,7 @@ fit.lm =
     trControl = ctr
   )
 
-RMSE(predict(fit.lm, newdata = sol_test), sol_test$solubility)
+RMSE(predict(fit.lm, newdata = sol_test), sol_test$solubility)^2
 ```
 
 # Question 2
@@ -89,7 +89,7 @@ plot(fit.ridge, xTrans = log)
 
 fit.ridge$bestTune
 
-RMSE(predict(fit.ridge, s = "lamda.min", news = sol_test), sol_test$solubility)
+RMSE(predict(fit.ridge, s = "lamda.min", news = sol_test), sol_test$solubility)^2
 ```
 
 # Question 3
@@ -114,7 +114,7 @@ plot(fit.lasso, xTrans = log)
 
 fit.lasso$bestTune
 
-RMSE(predict(fit.lasso, s = "lambda.min", newx = sol_test), sol_test$solubility)
+RMSE(predict(fit.lasso, s = "lambda.min", newx = sol_test), sol_test$solubility)^2
 
 
 sum(coef(fit.lasso$finalModel, s = fit.lasso$bestTune$lambda)!=0)
@@ -136,14 +136,12 @@ fit.pcr =
     trControl = ctr
   )
 
-fit.pcr$bestTune
-
-ggplot(fit.pcr, highlight = TRUE) + theme_bw()
+fit.pcr$bestTune #Find the best M
 
 validationplot(fit.pcr$finalModel, val.type="MSEP", legendpos = "topright")
 
-RMSE(predict(fit.pcr, x_test), y_test)
-mean((predict(fit.pcr, x_test) - y_test)^2)
+RMSE(predict(fit.pcr, x_test), y_test)^2 # Calculate MSE
+mean((predict(fit.pcr, x_test) - y_test)^2) # Check
 ```
 
 # Question 5
@@ -162,4 +160,4 @@ summary(resample)
 bwplot(resample, metric = "RMSE")
 ```
 
-From numeric result and boxplot, Lasso model has the smallest RMSE, and we will choose it for predicting solubility.
+From numeric result and boxplot, Lasso model has the smallest RMSE, MAE, and the highest R^2, hence we will choose it for predicting solubility.
